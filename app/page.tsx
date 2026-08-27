@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Heart, Search, UtensilsCrossed } from "lucide-react";
-import { restaurants } from "@/data/restaurants";
 import { Restaurant } from "@/types/restaurant";
 import Navbar from "@/components/Navbar";
 import CategoryFilter from "@/components/CategoryFilter";
 import RestaurantCard from "@/components/RestaurantCard";
 import RestaurantModal from "@/components/RestaurantModal";
+import AddRestaurantForm from "@/components/AddRestaurantForm";
 import EmptyState from "@/components/EmptyState";
 import { anton, jetbrainsMono } from "@/app/fonts";
 
@@ -20,10 +20,30 @@ const FAVORITES_STORAGE_KEY = "fiu-eats-favorites";
 export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [activeTab, setActiveTab] = useState<"all" | "favorites">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "favorites" | "add">(
+    "all"
+  );
   const [favorites, setFavorites] = useState<number[]>([]);
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<Restaurant | null>(null);
+
+  // The restaurant list now lives in Postgres, not in this file. Load it
+  // from the API on mount instead of importing a static array.
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/restaurants")
+      .then((res) => res.json())
+      .then((data) => setRestaurants(data))
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Called by the "Add Restaurant" form once the database has saved the
+  // new row and handed it back to us.
+  const handleCreated = (restaurant: Restaurant) => {
+    setRestaurants((current) => [...current, restaurant]);
+  };
 
   // Tracks whether we've already read favorites from localStorage, so the
   // save effect below doesn't immediately overwrite them with an empty
@@ -150,56 +170,71 @@ export default function Home() {
 
       {/* Main content */}
       <section className="mx-auto max-w-6xl px-6 py-10">
-        <CategoryFilter
-          categories={categories}
-          selected={selectedCategory}
-          onSelect={setSelectedCategory}
-        />
-
-        <div className="mt-10 flex items-end justify-between">
-          <div>
-            <h2 className={`${anton.className} text-2xl tracking-wide`}>
-              {activeTab === "favorites" ? "FAVORITES" : "RESTAURANTS"}
-            </h2>
-
-            <p
-              className={`${jetbrainsMono.className} mt-1 text-xs font-bold uppercase tracking-wider text-[#0B2340]/40`}
-            >
-              {filteredRestaurants.length}{" "}
-              {filteredRestaurants.length === 1 ? "restaurant" : "restaurants"}{" "}
-              found
-            </p>
-          </div>
-        </div>
-
-        {filteredRestaurants.length > 0 ? (
-          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredRestaurants.map((restaurant) => (
-              <RestaurantCard
-                key={restaurant.id}
-                restaurant={restaurant}
-                isFavorite={favorites.includes(restaurant.id)}
-                onToggleFavorite={toggleFavorite}
-                onView={setSelectedRestaurant}
-              />
-            ))}
-          </div>
-        ) : activeTab === "favorites" ? (
-          <EmptyState
-            icon={<Heart className="h-8 w-8" />}
-            title="No favorites yet"
-            description="Tap the heart on any restaurant to save it here."
-            actionLabel="Browse restaurants"
-            onAction={() => setActiveTab("all")}
+        {activeTab === "add" ? (
+          <AddRestaurantForm
+            onCreated={(restaurant) => {
+              handleCreated(restaurant);
+              setActiveTab("all");
+            }}
           />
         ) : (
-          <EmptyState
-            icon={<Search className="h-8 w-8" />}
-            title="No restaurants found"
-            description="Try searching for something else or choose another category."
-            actionLabel="Clear filters"
-            onAction={clearFilters}
-          />
+          <>
+            <CategoryFilter
+              categories={categories}
+              selected={selectedCategory}
+              onSelect={setSelectedCategory}
+            />
+
+            <div className="mt-10 flex items-end justify-between">
+              <div>
+                <h2 className={`${anton.className} text-2xl tracking-wide`}>
+                  {activeTab === "favorites" ? "FAVORITES" : "RESTAURANTS"}
+                </h2>
+
+                <p
+                  className={`${jetbrainsMono.className} mt-1 text-xs font-bold uppercase tracking-wider text-[#0B2340]/40`}
+                >
+                  {loading
+                    ? "Loading..."
+                    : `${filteredRestaurants.length} ${
+                        filteredRestaurants.length === 1
+                          ? "restaurant"
+                          : "restaurants"
+                      } found`}
+                </p>
+              </div>
+            </div>
+
+            {loading ? null : filteredRestaurants.length > 0 ? (
+              <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {filteredRestaurants.map((restaurant) => (
+                  <RestaurantCard
+                    key={restaurant.id}
+                    restaurant={restaurant}
+                    isFavorite={favorites.includes(restaurant.id)}
+                    onToggleFavorite={toggleFavorite}
+                    onView={setSelectedRestaurant}
+                  />
+                ))}
+              </div>
+            ) : activeTab === "favorites" ? (
+              <EmptyState
+                icon={<Heart className="h-8 w-8" />}
+                title="No favorites yet"
+                description="Tap the heart on any restaurant to save it here."
+                actionLabel="Browse restaurants"
+                onAction={() => setActiveTab("all")}
+              />
+            ) : (
+              <EmptyState
+                icon={<Search className="h-8 w-8" />}
+                title="No restaurants found"
+                description="Try searching for something else or choose another category."
+                actionLabel="Clear filters"
+                onAction={clearFilters}
+              />
+            )}
+          </>
         )}
       </section>
 

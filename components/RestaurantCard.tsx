@@ -63,7 +63,7 @@ export default function RestaurantCard({
           <div
             className={`${jetbrainsMono.className} flex h-9 w-9 shrink-0 rotate-3 items-center justify-center rounded-full border-2 border-[#C89B3C] text-[11px] font-bold text-[#0B2340]`}
           >
-            {restaurant.rating}
+            {restaurant.rating ?? "New"}
           </div>
         </div>
 

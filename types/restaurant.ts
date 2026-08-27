@@ -5,7 +5,19 @@ export type Restaurant = {
   id: number;
   name: string;
   category: string;
-  rating: number;
+  // Null until someone rates it — restaurants added through the form
+  // start out unrated.
+  rating: number | null;
+  price: string;
+  location: string;
+  description: string;
+};
+
+// Fields the "Add a restaurant" form collects. The server fills in
+// `id` and `rating` (null) when it inserts the row.
+export type NewRestaurant = {
+  name: string;
+  category: string;
   price: string;
   location: string;
   description: string;

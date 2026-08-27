@@ -88,7 +88,7 @@ export default function RestaurantModal({
             <div
               className={`${jetbrainsMono.className} flex h-11 w-11 shrink-0 rotate-3 items-center justify-center rounded-full border-2 border-[#C89B3C] text-sm font-bold text-[#0B2340]`}
             >
-              {restaurant.rating}
+              {restaurant.rating ?? "New"}
             </div>
           </div>
 

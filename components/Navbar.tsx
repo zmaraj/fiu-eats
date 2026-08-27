@@ -1,12 +1,13 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import { anton, jetbrainsMono } from "@/app/fonts";
 
 type NavbarProps = {
   // Which tab is currently selected.
-  activeTab: "all" | "favorites";
+  activeTab: "all" | "favorites" | "add";
   // Called with the new tab name whenever the user clicks a tab.
-  onTabChange: (tab: "all" | "favorites") => void;
+  onTabChange: (tab: "all" | "favorites" | "add") => void;
   // Number shown in the little badge next to "Favorites".
   favoritesCount: number;
 };
@@ -62,6 +63,18 @@ export default function Navbar({
                 {favoritesCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => onTabChange("add")}
+            className={`flex items-center gap-1.5 border-b-2 px-3 py-2 transition ${
+              activeTab === "add"
+                ? "border-[#C89B3C] text-white"
+                : "border-transparent text-white/50 hover:text-white/80"
+            }`}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            Add Restaurant
           </button>
         </div>
       </div>

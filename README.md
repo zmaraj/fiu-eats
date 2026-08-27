@@ -1,5 +1,29 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+Restaurants are stored in a real Postgres database, running locally in
+Docker.
+
+## Database setup
+
+1. Start Postgres:
+   ```bash
+   docker compose up -d
+   ```
+2. Copy the env file (defaults already match the Docker Compose service):
+   ```bash
+   cp .env.example .env.local
+   ```
+3. Create the table and load starter data:
+   ```bash
+   npm run db:setup
+   ```
+
+You now have a `restaurants` table you can inspect directly:
+
+```bash
+docker compose exec db psql -U postgres -d fiu_eats -c "SELECT * FROM restaurants;"
+```
+
 ## Getting Started
 
 First, run the development server:
