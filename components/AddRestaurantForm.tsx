@@ -3,14 +3,14 @@
 import { FormEvent, useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
 import { anton, jetbrainsMono } from "@/app/fonts";
-import { NewRestaurant } from "@/types/restaurant";
+import { NewRestaurant, Restaurant } from "@/types/restaurant";
 
 const priceOptions = ["$", "$$", "$$$"];
 
 type AddRestaurantFormProps = {
   // Called with the fields the user typed in. The page decides how to
   // turn that into a full restaurant
-  onCreated: (restaurant: NewRestaurant) => void;
+  onCreated: (restaurant: Restaurant) => void;
 };
 
 const emptyForm: NewRestaurant = {
@@ -29,16 +29,41 @@ export default function AddRestaurantForm({
 }: AddRestaurantFormProps) {
   const [form, setForm] = useState<NewRestaurant>(emptyForm);
   const [justAdded, setJustAdded] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const updateField = (field: keyof NewRestaurant, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    onCreated(form);
-    setForm(emptyForm);
-    setJustAdded(true);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/restaurants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(
+          body?.error ?? "Something went wrong. Please try again."
+        );
+      }
+
+      const created: Restaurant = await res.json();
+      onCreated(created);
+      setForm(emptyForm);
+      setJustAdded(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -154,6 +179,8 @@ export default function AddRestaurantForm({
           />
         </div>
 
+        {error && <p className="text-sm text-red-600">{error}</p>}
+
         {justAdded && (
           <p className="text-sm text-emerald-600">
             Added! Check the Restaurants tab to see it.
@@ -162,9 +189,10 @@ export default function AddRestaurantForm({
 
         <button
           type="submit"
-          className="w-full rounded bg-[#0B2340] py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#C89B3C] hover:text-[#0B2340]"
+          disabled={submitting}
+          className="w-full rounded bg-[#0B2340] py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#C89B3C] hover:text-[#0B2340] disabled:opacity-50"
         >
-          Add Restaurant
+          {submitting ? "Adding..." : "Add Restaurant"}
         </button>
       </form>
     </div>

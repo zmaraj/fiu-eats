@@ -10,7 +10,6 @@ import RestaurantModal from "@/components/RestaurantModal";
 import AddRestaurantForm from "@/components/AddRestaurantForm";
 import EmptyState from "@/components/EmptyState";
 import { anton, jetbrainsMono } from "@/app/fonts";
-import { initialRestaurants } from "@/data/restaurants";
 
 const categories = ["All", "Asian", "Mexican", "American", "Coffee"];
 
@@ -32,20 +31,20 @@ export default function Home() {
   // changes in React state. Nothing here is saved anywhere else, so a
   // page refresh or opening the site in another tab resets it back to
   // the starter list.
-  const [restaurants, setRestaurants] =
-    useState<Restaurant[]>(initialRestaurants);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/restaurants")
+      .then((res) => res.json())
+      .then((data) => setRestaurants(data))
+      .finally(() => setLoading(false));
+  }, []);
 
   // Called by the "Add Restaurant" form with just the fields the user
   // typed in.
-  const handleCreated = (restaurant: NewRestaurant) => {
-    setRestaurants((current) => [
-      ...current,
-      {
-        ...restaurant,
-        id: current.length > 0 ? Math.max(...current.map((r) => r.id)) + 1 : 1,
-        rating: null,
-      },
-    ]);
+  const handleCreated = (restaurant: Restaurant) => {
+    setRestaurants((current) => [...current, restaurant]);
   };
 
   // Tracks whether we already read favorites from localStorage, so the
