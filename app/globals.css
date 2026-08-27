@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+/* Base page colors. The rest of the site uses its own navy/gold palette
+   directly in each component's classes, so this just sets a sane default
+   background/text color for anything that isn't explicitly styled. */
+body {
+  background: #f6f7f5;
+  color: #0b2340;
+}
