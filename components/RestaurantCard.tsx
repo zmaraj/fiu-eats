@@ -23,9 +23,12 @@ export default function RestaurantCard({
 }: RestaurantCardProps) {
   return (
     <div className="group relative overflow-visible rounded-lg bg-white shadow-sm ring-1 ring-black/5 transition duration-200 hover:-translate-y-1 hover:shadow-lg">
-      {/* Image block (we don't have real photos, so this is a styled placeholder) */}
+      {/* Image block */}
       <div className="relative flex h-40 items-center justify-center overflow-hidden rounded-t-lg bg-[#0B2340]">
-        <UtensilsCrossed className="h-12 w-12 text-white/90" strokeWidth={1.5} />
+        <UtensilsCrossed
+          className="h-12 w-12 text-white/90"
+          strokeWidth={1.5}
+        />
 
         <button
           onClick={() => onToggleFavorite(restaurant.id)}
@@ -34,7 +37,9 @@ export default function RestaurantCard({
           className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur transition hover:scale-110 hover:bg-white/25"
         >
           <Heart
-            className={`h-4 w-4 ${isFavorite ? "fill-[#C89B3C] text-[#C89B3C]" : ""}`}
+            className={`h-4 w-4 ${
+              isFavorite ? "fill-[#C89B3C] text-[#C89B3C]" : ""
+            }`}
           />
         </button>
 

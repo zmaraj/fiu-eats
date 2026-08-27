@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { anton, jetbrainsMono } from "@/app/fonts";
 
 type EmptyStateProps = {
-  // Icon element shown above the title, e.g. <Search className="h-8 w-8" />.
+  // Icon element shown above the title,
   icon: ReactNode;
   title: string;
   description: string;

@@ -6,10 +6,10 @@
 // everywhere else instead of repeating this setup in every file.
 import { Anton, JetBrains_Mono } from "next/font/google";
 
-// Big bold display font used for headings (e.g. restaurant names, "FIU EATS").
+// Big bold display font used for headings
 export const anton = Anton({ subsets: ["latin"], weight: "400", display: "swap" });
 
-// Monospace font used for small uppercase labels/badges (e.g. "ASIAN · $$").
+// Monospace font used for small uppercase labels/badges
 export const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["500", "700"],

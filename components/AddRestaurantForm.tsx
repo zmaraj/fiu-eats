@@ -3,14 +3,14 @@
 import { FormEvent, useState } from "react";
 import { UtensilsCrossed } from "lucide-react";
 import { anton, jetbrainsMono } from "@/app/fonts";
-import { NewRestaurant, Restaurant } from "@/types/restaurant";
+import { NewRestaurant } from "@/types/restaurant";
 
 const priceOptions = ["$", "$$", "$$$"];
 
 type AddRestaurantFormProps = {
-  // Called with the restaurant the server created, once the POST
-  // succeeds, so the page can add it to the list right away.
-  onCreated: (restaurant: Restaurant) => void;
+  // Called with the fields the user typed in. The page decides how to
+  // turn that into a full restaurant
+  onCreated: (restaurant: NewRestaurant) => void;
 };
 
 const emptyForm: NewRestaurant = {
@@ -21,46 +21,24 @@ const emptyForm: NewRestaurant = {
   description: "",
 };
 
-// Form for submitting a brand new restaurant. Posts to /api/restaurants,
-// which inserts it into the database.
+// Form for adding a brand new restaurant. This only updates React state
+// on the page above it, nothing here is saved to a server or a database,
+// so a refresh (or opening the site on another device) loses it.
 export default function AddRestaurantForm({
   onCreated,
 }: AddRestaurantFormProps) {
   const [form, setForm] = useState<NewRestaurant>(emptyForm);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [justAdded, setJustAdded] = useState(false);
 
   const updateField = (field: keyof NewRestaurant, value: string) => {
     setForm((current) => ({ ...current, [field]: value }));
   };
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-
-    try {
-      const res = await fetch("/api/restaurants", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error ?? "Something went wrong. Please try again.");
-      }
-
-      const created: Restaurant = await res.json();
-      onCreated(created);
-      setForm(emptyForm);
-      setJustAdded(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setSubmitting(false);
-    }
+    onCreated(form);
+    setForm(emptyForm);
+    setJustAdded(true);
   };
 
   return (
@@ -73,12 +51,14 @@ export default function AddRestaurantForm({
 
       <form onSubmit={handleSubmit} className="space-y-5 p-6">
         <div>
-          <h2 className={`${anton.className} text-xl tracking-wide text-[#0B2340]`}>
+          <h2
+            className={`${anton.className} text-xl tracking-wide text-[#0B2340]`}
+          >
             ADD A RESTAURANT
           </h2>
           <p className="mt-1 text-sm text-[#0B2340]/50">
-            Know a spot that&apos;s missing? Add it below and it&apos;ll show
-            up for everyone.
+            Know a spot that&apos;s missing? Add it below and it&apos;ll show up
+            for everyone.
           </p>
         </div>
 
@@ -174,8 +154,7 @@ export default function AddRestaurantForm({
           />
         </div>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {justAdded && !error && (
+        {justAdded && (
           <p className="text-sm text-emerald-600">
             Added! Check the Restaurants tab to see it.
           </p>
@@ -183,10 +162,9 @@ export default function AddRestaurantForm({
 
         <button
           type="submit"
-          disabled={submitting}
-          className="w-full rounded bg-[#0B2340] py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#C89B3C] hover:text-[#0B2340] disabled:opacity-50"
+          className="w-full rounded bg-[#0B2340] py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-[#C89B3C] hover:text-[#0B2340]"
         >
-          {submitting ? "Adding..." : "Add Restaurant"}
+          Add Restaurant
         </button>
       </form>
     </div>

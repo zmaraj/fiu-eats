@@ -56,7 +56,10 @@ export default function RestaurantModal({
         className="w-full max-w-lg overflow-visible rounded-lg bg-white shadow-2xl"
       >
         <div className="relative flex h-48 items-center justify-center overflow-hidden rounded-t-lg bg-[#0B2340]">
-          <UtensilsCrossed className="h-16 w-16 text-white/90" strokeWidth={1.5} />
+          <UtensilsCrossed
+            className="h-16 w-16 text-white/90"
+            strokeWidth={1.5}
+          />
 
           <button
             onClick={onClose}

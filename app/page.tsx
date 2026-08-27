@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Heart, Search, UtensilsCrossed } from "lucide-react";
-import { Restaurant } from "@/types/restaurant";
+import { NewRestaurant, Restaurant } from "@/types/restaurant";
 import Navbar from "@/components/Navbar";
 import CategoryFilter from "@/components/CategoryFilter";
 import RestaurantCard from "@/components/RestaurantCard";
@@ -10,6 +10,7 @@ import RestaurantModal from "@/components/RestaurantModal";
 import AddRestaurantForm from "@/components/AddRestaurantForm";
 import EmptyState from "@/components/EmptyState";
 import { anton, jetbrainsMono } from "@/app/fonts";
+import { initialRestaurants } from "@/data/restaurants";
 
 const categories = ["All", "Asian", "Mexican", "American", "Coffee"];
 
@@ -27,25 +28,27 @@ export default function Home() {
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<Restaurant | null>(null);
 
-  // The restaurant list now lives in Postgres, not in this file. Load it
-  // from the API on mount instead of importing a static array.
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(true);
+  // The restaurant list starts out as this hardcoded array and only ever
+  // changes in React state. Nothing here is saved anywhere else, so a
+  // page refresh or opening the site in another tab resets it back to
+  // the starter list.
+  const [restaurants, setRestaurants] =
+    useState<Restaurant[]>(initialRestaurants);
 
-  useEffect(() => {
-    fetch("/api/restaurants")
-      .then((res) => res.json())
-      .then((data) => setRestaurants(data))
-      .finally(() => setLoading(false));
-  }, []);
-
-  // Called by the "Add Restaurant" form once the database has saved the
-  // new row and handed it back to us.
-  const handleCreated = (restaurant: Restaurant) => {
-    setRestaurants((current) => [...current, restaurant]);
+  // Called by the "Add Restaurant" form with just the fields the user
+  // typed in.
+  const handleCreated = (restaurant: NewRestaurant) => {
+    setRestaurants((current) => [
+      ...current,
+      {
+        ...restaurant,
+        id: current.length > 0 ? Math.max(...current.map((r) => r.id)) + 1 : 1,
+        rating: null,
+      },
+    ]);
   };
 
-  // Tracks whether we've already read favorites from localStorage, so the
+  // Tracks whether we already read favorites from localStorage, so the
   // save effect below doesn't immediately overwrite them with an empty
   // list before the load has finished.
   const [hasLoadedFavorites, setHasLoadedFavorites] = useState(false);
@@ -194,18 +197,16 @@ export default function Home() {
                 <p
                   className={`${jetbrainsMono.className} mt-1 text-xs font-bold uppercase tracking-wider text-[#0B2340]/40`}
                 >
-                  {loading
-                    ? "Loading..."
-                    : `${filteredRestaurants.length} ${
-                        filteredRestaurants.length === 1
-                          ? "restaurant"
-                          : "restaurants"
-                      } found`}
+                  {`${filteredRestaurants.length} ${
+                    filteredRestaurants.length === 1
+                      ? "restaurant"
+                      : "restaurants"
+                  } found`}
                 </p>
               </div>
             </div>
 
-            {loading ? null : filteredRestaurants.length > 0 ? (
+            {filteredRestaurants.length > 0 ? (
               <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredRestaurants.map((restaurant) => (
                   <RestaurantCard
