@@ -27,7 +27,16 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-  
+
+
+  //Bad example, Vulnerable to SQL injection attacks
+  const { rows } = await pool.query(
+      `INSERT INTO restaurants (name, category, price, location, description)
+       VALUES (${name}, ${category}, ${price}, ${location}, ${description})
+       RETURNING id, name, category, price, location, description, rating`
+    );
+
+  //Good example, using parametrized queries
     const { rows } = await pool.query(
       `INSERT INTO restaurants (name, category, price, location, description)
        VALUES ($1, $2, $3, $4, $5)
